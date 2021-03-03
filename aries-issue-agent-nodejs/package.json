@@ -1,0 +1,25 @@
+{
+  "name": "aries-issue-agent",
+  "version": "0.0.1",
+  "description": "An quick implementation of afj to issue credentials",
+  "main": "src/index.ts",
+  "author": "Berend Sliedrecht",
+  "license": "Apache-2.0",
+  "private": true,
+  "scripts": {
+    "start": "npx ts-node src/index.ts"
+  },
+  "dependencies": {
+    "@types/indy-sdk": "^1.15.0",
+    "@types/node": "^14.14.31",
+    "@types/node-fetch": "^2.5.8",
+    "aries-framework-javascript": "file:aries-framework-javascript-v1.0.0.tgz",
+    "fs": "^0.0.1-security",
+    "indy-sdk": "^1.16.0",
+    "node-fetch": "^2.6.1",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "typescript": "^4.2.2"
+  }
+}
