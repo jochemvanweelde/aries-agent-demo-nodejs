@@ -7,7 +7,6 @@ import {
   CredentialPreviewAttribute,
   CredentialRecord,
 } from "aries-framework-javascript";
-import { dataUri } from "../samples/dataUri1mB.sample";
 import { initAgent } from "./agent/agent.provider";
 
 const URL = "https://d55d44d1866a.ngrok.io";
@@ -16,9 +15,9 @@ const URL = "https://d55d44d1866a.ngrok.io";
 const credentialPreview = new CredentialPreview({
   attributes: [
     new CredentialPreviewAttribute({
-      name: "image",
+      name: "test",
       mimeType: "text/plain",
-      value: dataUri,
+      value: "Hello World!",
     }),
   ],
 });
@@ -121,9 +120,9 @@ const credentialHandler = async (agent: Agent) => {
 // Creates a schema
 const createSchema = async (agent: Agent): Promise<any> => {
   return agent.ledger.registerCredentialSchema({
-    name: "imageSchema",
+    name: "testSchema",
     version: "1.0",
-    attributes: ["image"],
+    attributes: ["test"],
   });
 };
 
