@@ -1,4 +1,4 @@
-import { Agent, InitConfig } from "aries-framework-javascript";
+import { Agent, InitConfig } from "aries-framework";
 import indy from "indy-sdk";
 import { downloadGenesis, storeGenesis } from "./genesis-utils";
 import {
@@ -23,8 +23,9 @@ const initAgent = async (mediatorUrl: string): Promise<Agent> => {
     genesisPath,
     mediatorUrl,
     publicDidSeed: "12345678901234567890123456789099",
+    indy,
   };
-  const agent = new Agent(agentConfig, inbound, outbound, indy);
+  const agent = new Agent(agentConfig);
   console.log("agent instance created");
   await agent.init().catch((e) => console.error(e));
   return agent;

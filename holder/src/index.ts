@@ -5,14 +5,14 @@ import {
   ConnectionRecord,
   CredentialEventType,
   CredentialRecord,
-} from "aries-framework-javascript";
+} from "aries-framework";
 import { initAgent } from "./agent/agent.provider";
 
-const URL = "https://2e08cd27502a.ngrok.io";
+const URL = "https://1e6f61fc37ca.ngrok.io";
 
 // invite object that was logged by the issuer
 const INVITE =
-  "eyJAdHlwZSI6ImRpZDpzb3Y6QnpDYnNOWWhNcmpIaXFaRFRVQVNIZztzcGVjL2Nvbm5lY3Rpb25zLzEuMC9pbnZpdGF0aW9uIiwiQGlkIjoiZTVlYmM1ZGItOTNiNy00OTM1LWJmODQtNGQ5NjM2ZTFkY2EyIiwibGFiZWwiOiIwNWMxYzA2Mi02N2I4LTRhMTQtODQ0NC03YjQ2ZWJmYTNlZWMiLCJyZWNpcGllbnRLZXlzIjpbIjdrRThaUDVmNlF6amgxc21rcVB3YWJYVkJSRGhOVWFXNGllQ2tQdXZ0UTJHIl0sInNlcnZpY2VFbmRwb2ludCI6Imh0dHBzOi8vOGY4MmEzMjk3Y2JmLm5ncm9rLmlvL21zZyIsInJvdXRpbmdLZXlzIjpbIkVuTHdHWFVxTnNwM3JndnQ3a1Y0N2VRS1BWMnBQQlVXU2ZtY2R6OGY3dlU2Il19";
+  "eyJAdHlwZSI6Imh0dHBzOi8vZGlkY29tbS5vcmcvY29ubmVjdGlvbnMvMS4wL2ludml0YXRpb24iLCJAaWQiOiJjZGRmN2M0My03YjRkLTRmM2QtYmEwOC04NzI2YTNmNzU2YjUiLCJsYWJlbCI6Ijc0NmVhNmRhLTZhNjctNDMxZC05NjQzLTY3ZWJmYmZmOWZhMyIsInJlY2lwaWVudEtleXMiOlsiMmVEanpKNmgyRXVocFFXWUE5MUEzdERDc0FtQ0FXQmk0RUZDZ283TVVlNFUiXSwic2VydmljZUVuZHBvaW50IjoiZGlkY29tbTp0cmFuc3BvcnQvcXVldWUiLCJyb3V0aW5nS2V5cyI6W119";
 
 const main = async () => {
   console.log("--- made with <3 by an intern at Animo ---");

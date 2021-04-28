@@ -6,10 +6,10 @@ import {
   CredentialPreview,
   CredentialPreviewAttribute,
   CredentialRecord,
-} from "aries-framework-javascript";
+} from "aries-framework";
 import { initAgent } from "./agent/agent.provider";
 
-const URL = "https://d55d44d1866a.ngrok.io";
+const URL = "https://e402b21db9c1.ngrok.io";
 
 // Issueable attributes
 const credentialPreview = new CredentialPreview({
@@ -59,7 +59,7 @@ const connectionHandler = async (agent: Agent) => {
       // Automates the issue credential flow
       if (handler.connectionRecord.state === "complete") {
         // Register the DID
-        await agent.ledger.getPublicDid(agent.getPublicDid().did);
+        await agent.ledger.getPublicDid(agent.publicDid.did);
 
         // Create a schema
         console.log("Creating schema...");
@@ -119,7 +119,7 @@ const credentialHandler = async (agent: Agent) => {
 
 // Creates a schema
 const createSchema = async (agent: Agent): Promise<any> => {
-  return agent.ledger.registerCredentialSchema({
+  return agent.ledger.registerSchema({
     name: "testSchema",
     version: "1.0",
     attributes: ["test"],
@@ -133,7 +133,7 @@ const createCredentialDefinition = async (agent: Agent, schema: any) => {
     tag: "default",
     signatureType: "CL",
     config: {
-      support_revocation: false,
+      supportRevocation: false,
     },
   });
 };
