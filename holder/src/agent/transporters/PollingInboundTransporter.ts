@@ -1,4 +1,4 @@
-import { Agent, InboundTransporter } from "aries-framework-javascript";
+import { Agent, InboundTransporter } from "aries-framework";
 import fetch from "node-fetch";
 
 class PollingInboundTransporter implements InboundTransporter {
@@ -7,36 +7,35 @@ class PollingInboundTransporter implements InboundTransporter {
   public constructor() {
     this.stop = false;
   }
-  public async start(agent: Agent): Promise<void> {
+  public async start(agent: Agent) {
     await this.registerMediator(agent);
   }
 
-  public async registerMediator(agent: Agent): Promise<void> {
-    try {
-      const mediatorUrl = agent.getMediatorUrl();
-      const mediatorInvitationUrlResponse = await fetch(
-        `${mediatorUrl}/invitation`
-      );
-      const response = await fetch(`${mediatorUrl}/`);
-      const { verkey } = JSON.parse(await response.text());
-      const invitationUrl = await mediatorInvitationUrlResponse.text();
-      await agent.routing.provision({
-        verkey,
-        invitationUrl,
-      });
-      this.pollDownloadMessages(agent);
-    } catch (error) {
-      console.warn(error);
-    }
+  public async registerMediator(agent: Agent) {
+    const mediatorUrl = agent.getMediatorUrl() || "";
+    const mediatorInvitationUrl = await (
+      await fetch(`${mediatorUrl}/invitation`)
+    ).text();
+    const { verkey: mediatorVerkey } = await (
+      await fetch(`${mediatorUrl}/`)
+    ).json();
+    await agent.routing.provision({
+      verkey: mediatorVerkey,
+      invitationUrl: mediatorInvitationUrl,
+    });
+    this.pollDownloadMessages(agent);
   }
-  private pollDownloadMessages(agent: Agent): void {
-    setInterval(async () => {
-      const downloadedMessages = await agent.routing.downloadMessages();
 
-      for (const message of downloadedMessages) {
-        await agent.receiveMessage(message);
+  private pollDownloadMessages(agent: Agent) {
+    const loop = async () => {
+      while (!this.stop) {
+        await agent.routing.downloadMessages();
+        await new Promise((res) => setTimeout(res, 10000));
       }
-    }, 10000);
+    };
+    new Promise(() => {
+      loop();
+    });
   }
 }
 

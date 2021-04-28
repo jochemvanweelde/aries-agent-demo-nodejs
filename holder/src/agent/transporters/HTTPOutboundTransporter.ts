@@ -1,11 +1,16 @@
-import { OutboundTransporter } from "aries-framework-javascript";
+import { Agent, OutboundPackage, OutboundTransporter } from "aries-framework";
 import fetch from "node-fetch";
 
 class HttpOutboundTransporter implements OutboundTransporter {
+  private agent: Agent;
+
+  public constructor(agent: Agent) {
+    this.agent = agent;
+  }
   public async sendMessage(
-    outboundPackage: any,
+    outboundPackage: OutboundPackage,
     receiveReply: boolean
-  ): Promise<void> {
+  ) {
     const { payload, endpoint } = outboundPackage;
 
     if (!endpoint) {
@@ -14,28 +19,19 @@ class HttpOutboundTransporter implements OutboundTransporter {
       );
     }
 
-    try {
-      if (receiveReply) {
+    if (receiveReply) {
+      try {
         const response = await fetch(endpoint, {
           method: "POST",
-          headers: { "Content-Type": "application/ssi-agent-wire" },
           body: JSON.stringify(payload),
         });
-        const data = await response.text();
-        const wireMessage = JSON.parse(data);
-        return wireMessage;
-      } else {
-        await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/ssi-agent-wire",
-          },
-          body: JSON.stringify(payload),
-        });
+        this.agent.receiveMessage(await response.json());
+        return response;
+      } catch (e) {
+        console.error(e);
       }
-    } catch (e) {
-      console.error("error sending message", e);
-      throw e;
+    } else {
+      await fetch(endpoint, { method: "POST", body: JSON.stringify(payload) });
     }
   }
 }

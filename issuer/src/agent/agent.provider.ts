@@ -11,21 +11,20 @@ const initAgent = async (mediatorUrl: string): Promise<Agent> => {
   const genesis = await downloadGenesis();
   const genesisPath = await storeGenesis(genesis, "genesis.txn");
 
-  const outbound = new HttpOutboundTransporter();
-  const inbound = new PollingInboundTransporter();
-
   const agentConfig: InitConfig = {
     label: uuidv4(),
     walletConfig: { id: uuidv4() },
     walletCredentials: { key: uuidv4() },
     autoAcceptConnections: true,
-    poolName: "test-9832743",
+    poolName: uuidv4(),
     genesisPath,
     mediatorUrl,
-    publicDidSeed: "12345678901234567890123456789099",
+    publicDidSeed: "12345678901234567890123456787777",
     indy,
   };
   const agent = new Agent(agentConfig);
+  agent.setInboundTransporter(new PollingInboundTransporter());
+  agent.setOutboundTransporter(new HttpOutboundTransporter(agent));
   console.log("agent instance created");
   await agent.init().catch((e) => console.error(e));
   return agent;

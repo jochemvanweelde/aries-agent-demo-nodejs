@@ -8,11 +8,11 @@ import {
 } from "aries-framework";
 import { initAgent } from "./agent/agent.provider";
 
-const URL = "https://1e6f61fc37ca.ngrok.io";
+const URL = "https://2c69b1bc5132.ngrok.io";
 
 // invite object that was logged by the issuer
 const INVITE =
-  "eyJAdHlwZSI6Imh0dHBzOi8vZGlkY29tbS5vcmcvY29ubmVjdGlvbnMvMS4wL2ludml0YXRpb24iLCJAaWQiOiJjZGRmN2M0My03YjRkLTRmM2QtYmEwOC04NzI2YTNmNzU2YjUiLCJsYWJlbCI6Ijc0NmVhNmRhLTZhNjctNDMxZC05NjQzLTY3ZWJmYmZmOWZhMyIsInJlY2lwaWVudEtleXMiOlsiMmVEanpKNmgyRXVocFFXWUE5MUEzdERDc0FtQ0FXQmk0RUZDZ283TVVlNFUiXSwic2VydmljZUVuZHBvaW50IjoiZGlkY29tbTp0cmFuc3BvcnQvcXVldWUiLCJyb3V0aW5nS2V5cyI6W119";
+  "eyJAdHlwZSI6Imh0dHBzOi8vZGlkY29tbS5vcmcvY29ubmVjdGlvbnMvMS4wL2ludml0YXRpb24iLCJAaWQiOiIyMTllNzY2OC03OWJjLTQwY2QtYjFiYi00YjQxNTYzOTNmMzEiLCJsYWJlbCI6Ijg4YTc2ZDZmLTA1ZjQtNDYzOS1iNzcyLTFiOGQ0YzhjNGY3NiIsInJlY2lwaWVudEtleXMiOlsiRWU5Tm1SUVQ2ZUx0OHYyVlE3aFRlckxUcDVSY2VWb2lMNUJIWERhWmZZakoiXSwic2VydmljZUVuZHBvaW50IjoiaHR0cHM6Ly9lNWNkMzg4MThiY2Mubmdyb2suaW8vbXNnIiwicm91dGluZ0tleXMiOlsiODJSQlNuM2hlTGdYelpkNzRVc01DOFE4WVJmRUVoUW9BTTdMVXFFNmJldkoiXX0=";
 
 const main = async () => {
   console.log("--- made with <3 by an intern at Animo ---");

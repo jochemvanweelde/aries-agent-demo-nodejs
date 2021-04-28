@@ -9,7 +9,7 @@ import {
 } from "aries-framework";
 import { initAgent } from "./agent/agent.provider";
 
-const URL = "https://e402b21db9c1.ngrok.io";
+const URL = "https://e5cd38818bcc.ngrok.io";
 
 // Issueable attributes
 const credentialPreview = new CredentialPreview({
