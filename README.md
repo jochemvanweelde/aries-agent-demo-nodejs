@@ -15,7 +15,7 @@ cd aries-framework-javascript
 docker-compose -f ./docker/docker-compose-mediators.yml -f ./docker/docker-compose-mediators-ngrok.yml up
 ```
 
-After the all the containers are running, two NGROK urls should appear, eg: `https://2e08cd27502a.ngrok.io`
+After the all the containers are running, two NGROK urls should appear, eg: `endpoint: https://2e08cd27502a.ngrok.io`
 
 Paste one url in the issuer file (index.ts -> const URL) and the other in the holder file (same location)
 
@@ -23,17 +23,17 @@ Paste one url in the issuer file (index.ts -> const URL) and the other in the ho
 
 ```sh
 nvm use 12
-cd aries-agent-demo-nodejs/aries-holder-agent-nodejs
-yarn install
+cd aries-agent-demo-nodejs/holder
+yarn
 cd ../../
-cd aries-agent-demo-nodejs/aries-issue-agent-nodejs
-yarn install
+cd aries-agent-demo-nodejs/issuer
+yarn
 ```
 
 #### Running the issuer
 
 ```sh
-cd aries-agent-demo-nodejs/aries-issue-agent-nodejs
+cd aries-agent-demo-nodejs/issuer
 yarn start
 ```
 
@@ -42,6 +42,6 @@ yarn start
 #### Running the holder
 
 ```sh
-cd aries-agent-demo-nodejs/aries-holder-agent-nodejs
+cd aries-agent-demo-nodejs/holder
 yarn start
 ```
