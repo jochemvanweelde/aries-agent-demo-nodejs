@@ -5,14 +5,17 @@ import {
   ConnectionRecord,
   CredentialEventType,
   CredentialRecord,
+  JsonTransformer,
+  ProofRecord,
+  RequestPresentationMessage,
 } from "aries-framework";
 import { initAgent } from "./agent/agent.provider";
 
-const URL = "https://2c69b1bc5132.ngrok.io";
+const URL = "https://9822e25c06d2.ngrok.io";
 
 // invite object that was logged by the issuer
 const INVITE =
-  "eyJAdHlwZSI6Imh0dHBzOi8vZGlkY29tbS5vcmcvY29ubmVjdGlvbnMvMS4wL2ludml0YXRpb24iLCJAaWQiOiIyMTllNzY2OC03OWJjLTQwY2QtYjFiYi00YjQxNTYzOTNmMzEiLCJsYWJlbCI6Ijg4YTc2ZDZmLTA1ZjQtNDYzOS1iNzcyLTFiOGQ0YzhjNGY3NiIsInJlY2lwaWVudEtleXMiOlsiRWU5Tm1SUVQ2ZUx0OHYyVlE3aFRlckxUcDVSY2VWb2lMNUJIWERhWmZZakoiXSwic2VydmljZUVuZHBvaW50IjoiaHR0cHM6Ly9lNWNkMzg4MThiY2Mubmdyb2suaW8vbXNnIiwicm91dGluZ0tleXMiOlsiODJSQlNuM2hlTGdYelpkNzRVc01DOFE4WVJmRUVoUW9BTTdMVXFFNmJldkoiXX0=";
+  "eyJAdHlwZSI6Imh0dHBzOi8vZGlkY29tbS5vcmcvY29ubmVjdGlvbnMvMS4wL2ludml0YXRpb24iLCJAaWQiOiI1YjJmZTljOC1kNjBjLTRjODUtOGI5YS0xN2RiMjQ1ZmFkNGQiLCJsYWJlbCI6ImM5NTg3MmJkLTdkM2EtNGViNy1hNTcyLTYxMWIyMjM2MDg0OSIsInJlY2lwaWVudEtleXMiOlsiRmdtQzlvZGp4bXlYUml6NmVrQUQ2Vnk2bm05UkU4ckRyOWlFMlk0R2VhMWEiXSwic2VydmljZUVuZHBvaW50IjoiaHR0cHM6Ly9hMGE1NGE4MDk2YWUubmdyb2suaW8vbXNnIiwicm91dGluZ0tleXMiOlsiRW5Md0dYVXFOc3Azcmd2dDdrVjQ3ZVFLUFYycFBCVVdTZm1jZHo4Zjd2VTYiXX0=";
 
 const main = async () => {
   console.log("--- made with <3 by an intern at Animo ---");
@@ -28,6 +31,9 @@ const main = async () => {
 
   // Start the credential handler
   credentialHandler(agent);
+
+  // Start the proof handler
+  proofHandler(agent);
 };
 
 const receiveInvite = async (agent: Agent) => {
@@ -69,7 +75,6 @@ const credentialHandler = async (agent: Agent) => {
         `Credential state change: ${handler.previousState} -> ${handler.credentialRecord.state}`
       );
 
-      // Automates the issue credential flow
       switch (handler.credentialRecord.state) {
         case "offer-received":
           await agent.credentials.acceptOffer(handler.credentialRecord.id);
@@ -80,8 +85,44 @@ const credentialHandler = async (agent: Agent) => {
           console.log("Accepted credential");
           break;
         case "done":
-          console.log("flow is done!");
           break;
+      }
+    }
+  );
+};
+
+const proofHandler = async (agent: Agent) => {
+  agent.proofs.events.on(
+    CredentialEventType.StateChanged,
+    async (handler: { proofRecord: ProofRecord; previousState: string }) => {
+      console.log(
+        `Credential state change: 
+          ${handler.previousState} -> ${handler.proofRecord.state}`
+      );
+      switch (handler.proofRecord.state) {
+        case "request-received":
+          const requestMessage =
+            handler.proofRecord.requestMessage instanceof
+            RequestPresentationMessage
+              ? handler.proofRecord.requestMessage
+              : JsonTransformer.fromJSON(
+                  handler.proofRecord.requestMessage,
+                  RequestPresentationMessage
+                );
+          const proofRequest = requestMessage.indyProofRequest;
+          try {
+            const requestedCredentials = await agent.proofs.getRequestedCredentialsForProofRequest(
+              proofRequest,
+              undefined
+            );
+            await agent.proofs.acceptRequest(
+              handler.proofRecord.id,
+              requestedCredentials
+            );
+            console.log("proof request has been accepted");
+          } catch (e) {
+            console.error(e);
+          }
       }
     }
   );

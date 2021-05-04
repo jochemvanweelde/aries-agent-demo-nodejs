@@ -6,10 +6,11 @@ import {
   CredentialPreview,
   CredentialPreviewAttribute,
   CredentialRecord,
+  ProofRecord,
 } from "aries-framework";
 import { initAgent } from "./agent/agent.provider";
 
-const URL = "https://e5cd38818bcc.ngrok.io";
+const URL = "https://a0a54a8096ae.ngrok.io";
 
 // Issueable attributes
 const credentialPreview = new CredentialPreview({
@@ -35,17 +36,43 @@ const main = async () => {
   const b64invite = Buffer.from(JSON.stringify(invitation)).toString("base64");
 
   // Logs the invite for the nodejs holder
+  console.log("--------------------");
   console.log(b64invite);
+  console.log("--------------------");
+
+  // Register the DID
+  await agent.ledger.getPublicDid(agent.publicDid.did);
+
+  // Create a schema
+  console.log("Creating schema...");
+  const schemaId = `${agent.publicDid.did}:2:testSchema:1.0`;
+
+  let schema = await agent.ledger.getSchema(schemaId);
+  if (!schema) {
+    await createSchema(agent);
+    schema = await agent.ledger.getSchema(schemaId);
+  }
+
+  // Create a credential definition
+  console.log("Creating credential definition");
+  const [credDefId] = await createCredentialDefinition(agent, schema);
+
+  // Same as schema
+  const credDef = await agent.ledger.getCredentialDefinition(credDefId);
+  console.log("Created Definition");
 
   // Start the connection handler
-  connectionHandler(agent);
+  connectionHandler(agent, credDef);
 
   // Start the credential handler
   credentialHandler(agent);
+
+  // Start the proof handler
+  proofHandler(agent);
 };
 
 // handles all state changes on the connection
-const connectionHandler = async (agent: Agent) => {
+const connectionHandler = async (agent: Agent, credDef: any) => {
   agent.connections.events.on(
     ConnectionEventType.StateChanged,
     async (handler: {
@@ -56,28 +83,7 @@ const connectionHandler = async (agent: Agent) => {
         `Connection state change: ${handler.previousState} -> ${handler.connectionRecord.state}`
       );
 
-      // Automates the issue credential flow
       if (handler.connectionRecord.state === "complete") {
-        // Register the DID
-        await agent.ledger.getPublicDid(agent.publicDid.did);
-
-        // Create a schema
-        console.log("Creating schema...");
-        const [schemaId] = await createSchema(agent);
-
-        // Get the schema again because of issues with AFJ atm
-        // the return value from createSchema does not work
-        const schema = await agent.ledger.getSchema(schemaId);
-        console.log("Created Schema");
-
-        // Create a credential definition
-        console.log("Creating credential definition");
-        const [credDefId] = await createCredentialDefinition(agent, schema);
-
-        // Same as schema
-        const credDef = await agent.ledger.getCredentialDefinition(credDefId);
-        console.log("Created Definition");
-
         // Offer a credential to the holder
         await offerCredential(
           agent,
@@ -99,8 +105,7 @@ const credentialHandler = async (agent: Agent) => {
       previousState: string;
     }) => {
       console.log(
-        `Credential state change: 
-          ${handler.previousState} -> ${handler.credentialRecord.state}`
+        `Credential state change: ${handler.previousState} -> ${handler.credentialRecord.state}`
       );
       // Automates the issue credential flow
       switch (handler.credentialRecord.state) {
@@ -111,7 +116,45 @@ const credentialHandler = async (agent: Agent) => {
           console.log(`Accepted request`);
           break;
         case "done":
-          console.log("flow is done!");
+          const proofRequest = {
+            requestedAttributes: {
+              attr_1: {
+                name: "test",
+                restrictions: [
+                  {
+                    schemaName: "testSchema",
+                    schemaVersion: "1.0",
+                  },
+                ],
+              },
+            },
+          };
+          await agent.proofs
+            .requestProof(handler.credentialRecord.connectionId, proofRequest)
+            .catch((e) => console.error(e));
+          console.log("Proof has been requested");
+      }
+    }
+  );
+};
+
+const proofHandler = async (agent: Agent) => {
+  agent.proofs.events.on(
+    CredentialEventType.StateChanged,
+    async (handler: { proofRecord: ProofRecord; previousState: string }) => {
+      console.log(
+        `Credential state change: 
+          ${handler.previousState} -> ${handler.proofRecord.state}`
+      );
+      switch (handler.proofRecord.state) {
+        case "presentation-received":
+          await agent.proofs
+            .acceptPresentation(handler.proofRecord.id)
+            .catch((e) => console.error(e));
+          console.log("Presentation has been accepted");
+          break;
+        case "done":
+          console.log("--- Proof flow is done ---");
       }
     }
   );

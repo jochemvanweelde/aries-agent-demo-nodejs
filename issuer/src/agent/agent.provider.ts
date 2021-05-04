@@ -1,4 +1,4 @@
-import { Agent, InitConfig } from "aries-framework";
+import { Agent, InitConfig, LogLevel } from "aries-framework";
 import indy from "indy-sdk";
 import { downloadGenesis, storeGenesis } from "./genesis-utils";
 import {
@@ -6,6 +6,7 @@ import {
   PollingInboundTransporter,
 } from "./transporters";
 import { v4 as uuidv4 } from "uuid";
+import { TestLogger } from "aries-framework/build/src/__tests__/logger";
 
 const initAgent = async (mediatorUrl: string): Promise<Agent> => {
   const genesis = await downloadGenesis();
@@ -19,8 +20,9 @@ const initAgent = async (mediatorUrl: string): Promise<Agent> => {
     poolName: uuidv4(),
     genesisPath,
     mediatorUrl,
-    publicDidSeed: "12345678901234567890123456787777",
+    publicDidSeed: "12345678901234567890123456787710",
     indy,
+    logger: new TestLogger(LogLevel.warn),
   };
   const agent = new Agent(agentConfig);
   agent.setInboundTransporter(new PollingInboundTransporter());
