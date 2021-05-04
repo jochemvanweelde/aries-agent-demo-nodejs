@@ -10,7 +10,7 @@ import {
 } from "aries-framework";
 import { initAgent } from "./agent/agent.provider";
 
-const URL = "https://a0a54a8096ae.ngrok.io";
+const URL = "https://bb442e3c7ff0.ngrok.io";
 
 // Issueable attributes
 const credentialPreview = new CredentialPreview({
@@ -36,9 +36,9 @@ const main = async () => {
   const b64invite = Buffer.from(JSON.stringify(invitation)).toString("base64");
 
   // Logs the invite for the nodejs holder
-  console.log("--------------------");
+  console.log("---------INVITE-----------");
   console.log(b64invite);
-  console.log("--------------------");
+  console.log("--------------------------");
 
   // Register the DID
   await agent.ledger.getPublicDid(agent.publicDid.did);
@@ -52,9 +52,10 @@ const main = async () => {
     await createSchema(agent);
     schema = await agent.ledger.getSchema(schemaId);
   }
+  console.log("Created schema");
 
   // Create a credential definition
-  console.log("Creating credential definition");
+  console.log("Creating credential definition...");
   const [credDefId] = await createCredentialDefinition(agent, schema);
 
   // Same as schema
@@ -143,8 +144,7 @@ const proofHandler = async (agent: Agent) => {
     CredentialEventType.StateChanged,
     async (handler: { proofRecord: ProofRecord; previousState: string }) => {
       console.log(
-        `Credential state change: 
-          ${handler.previousState} -> ${handler.proofRecord.state}`
+        `Proof state change: ${handler.previousState} -> ${handler.proofRecord.state}`
       );
       switch (handler.proofRecord.state) {
         case "presentation-received":
@@ -154,7 +154,9 @@ const proofHandler = async (agent: Agent) => {
           console.log("Presentation has been accepted");
           break;
         case "done":
-          console.log("--- Proof flow is done ---");
+          console.log(
+            "--- FLOW IS DONE! The credential has been issued and verified! ---"
+          );
       }
     }
   );

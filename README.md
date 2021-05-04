@@ -45,3 +45,7 @@ yarn start
 cd aries-agent-demo-nodejs/holder
 yarn start
 ```
+
+### Expected outcoume
+
+![expected outcome](flow-logs.png)
