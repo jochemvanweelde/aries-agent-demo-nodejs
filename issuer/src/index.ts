@@ -1,8 +1,8 @@
 import {
   Agent,
-  ConnectionEventType,
+  ConnectionEventTypes,
   ConnectionRecord,
-  CredentialEventType,
+  CredentialEventTypes,
   CredentialPreview,
   CredentialPreviewAttribute,
   CredentialRecord,
@@ -10,7 +10,7 @@ import {
 } from "aries-framework";
 import { initAgent } from "./agent/agent.provider";
 
-const URL = "https://bb442e3c7ff0.ngrok.io";
+const URL = "https://14a7a5edd17c.ngrok.io";
 
 // Issueable attributes
 const credentialPreview = new CredentialPreview({
@@ -56,10 +56,10 @@ const main = async () => {
 
   // Create a credential definition
   console.log("Creating credential definition...");
-  const [credDefId] = await createCredentialDefinition(agent, schema);
+  const credDefId = await createCredentialDefinition(agent, schema);
 
   // Same as schema
-  const credDef = await agent.ledger.getCredentialDefinition(credDefId);
+  const credDef = await agent.ledger.getCredentialDefinition(credDefId.id);
   console.log("Created Definition");
 
   // Start the connection handler
@@ -74,45 +74,52 @@ const main = async () => {
 
 // handles all state changes on the connection
 const connectionHandler = async (agent: Agent, credDef: any) => {
-  agent.connections.events.on(
-    ConnectionEventType.StateChanged,
+  agent.events.on(
+    ConnectionEventTypes.ConnectionStateChanged,
     async (handler: {
-      connectionRecord: ConnectionRecord;
-      previousState: string;
+      type: ConnectionEventTypes.ConnectionStateChanged,
+      payload: {
+        connectionRecord: ConnectionRecord,
+        previousState: string;
+      }
     }) => {
       console.log(
-        `Connection state change: ${handler.previousState} -> ${handler.connectionRecord.state}`
+        `Connection state change: ${handler.payload.previousState} -> ${handler.payload.connectionRecord.state}`
       );
 
-      if (handler.connectionRecord.state === "complete") {
+      if (handler.payload.connectionRecord.state === "complete") {
         // Offer a credential to the holder
         await offerCredential(
           agent,
           credentialPreview,
           credDef,
-          handler.connectionRecord.id
+          handler.payload.connectionRecord.id
         ).catch((e) => console.error(e));
       }
     }
   );
-};
+}
+
 
 // handles all state changes on the credential
 const credentialHandler = async (agent: Agent) => {
-  agent.credentials.events.on(
-    CredentialEventType.StateChanged,
+  agent.events.on(
+    CredentialEventTypes.CredentialStateChanged,
     async (handler: {
-      credentialRecord: CredentialRecord;
-      previousState: string;
+      type: CredentialEventTypes.CredentialStateChanged,
+      payload: {
+        credentialRecord: CredentialRecord;
+        previousState: string;
+      }
     }) => {
       console.log(
-        `Credential state change: ${handler.previousState} -> ${handler.credentialRecord.state}`
+        `Credential state change: ${handler.payload.previousState} -> ${handler.payload.credentialRecord.state}`
       );
       // Automates the issue credential flow
-      switch (handler.credentialRecord.state) {
+      switch (handler.payload.credentialRecord.state) {
         case "request-received":
           await agent.credentials
-            .acceptRequest(handler.credentialRecord.id)
+            .acceptRequest(handler.payload.credentialRecord.id)
             .catch((e) => console.error(e));
           console.log(`Accepted request`);
           break;
@@ -131,7 +138,7 @@ const credentialHandler = async (agent: Agent) => {
             },
           };
           await agent.proofs
-            .requestProof(handler.credentialRecord.connectionId, proofRequest)
+            .requestProof(handler.payload.credentialRecord.connectionId, proofRequest)
             .catch((e) => console.error(e));
           console.log("Proof has been requested");
       }
@@ -140,16 +147,22 @@ const credentialHandler = async (agent: Agent) => {
 };
 
 const proofHandler = async (agent: Agent) => {
-  agent.proofs.events.on(
-    CredentialEventType.StateChanged,
-    async (handler: { proofRecord: ProofRecord; previousState: string }) => {
+  agent.events.on(
+    CredentialEventTypes.CredentialStateChanged,
+    async (handler: {
+      type: CredentialEventTypes.CredentialStateChanged,
+      payload: {
+        proofRecord: ProofRecord;
+        previousState: string 
+      }
+      }) => {
       console.log(
-        `Proof state change: ${handler.previousState} -> ${handler.proofRecord.state}`
+        `Proof state change: ${handler.payload.previousState} -> ${handler.payload.proofRecord.state}`
       );
-      switch (handler.proofRecord.state) {
+      switch (handler.payload.proofRecord.state) {
         case "presentation-received":
           await agent.proofs
-            .acceptPresentation(handler.proofRecord.id)
+            .acceptPresentation(handler.payload.proofRecord.id)
             .catch((e) => console.error(e));
           console.log("Presentation has been accepted");
           break;
@@ -177,9 +190,7 @@ const createCredentialDefinition = async (agent: Agent, schema: any) => {
     schema,
     tag: "default",
     signatureType: "CL",
-    config: {
-      supportRevocation: false,
-    },
+    supportRevocation: false,
   });
 };
 

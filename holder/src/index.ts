@@ -1,9 +1,9 @@
 import {
   Agent,
-  ConnectionEventType,
+  ConnectionEventTypes,
   ConnectionInvitationMessage,
   ConnectionRecord,
-  CredentialEventType,
+  CredentialEventTypes,
   CredentialRecord,
   JsonTransformer,
   ProofRecord,
@@ -11,11 +11,11 @@ import {
 } from "aries-framework";
 import { initAgent } from "./agent/agent.provider";
 
-const URL = "https://68a34548b582.ngrok.io";
+const URL = "https://333338b8ef0b.ngrok.io";
 
 // invite object that was logged by the issuer
 const INVITE =
-  "eyJAdHlwZSI6Imh0dHBzOi8vZGlkY29tbS5vcmcvY29ubmVjdGlvbnMvMS4wL2ludml0YXRpb24iLCJAaWQiOiJlZGViN2VhZi1kYjRjLTQxYzMtYmY4ZC03Y2ZhMWQwZTQ3NDUiLCJsYWJlbCI6IjVhNjdhZGI1LTdiMTgtNGY1Yy05MjM4LWYyZThiZmUyZGEyMCIsInJlY2lwaWVudEtleXMiOlsiNnJIR29zb1pVYk5xTXFXVnZHVU1qalloZEU5S2lMeXM4bXROWlhXZ1EyY1MiXSwic2VydmljZUVuZHBvaW50IjoiaHR0cHM6Ly9iYjQ0MmUzYzdmZjAubmdyb2suaW8vbXNnIiwicm91dGluZ0tleXMiOlsiODJSQlNuM2hlTGdYelpkNzRVc01DOFE4WVJmRUVoUW9BTTdMVXFFNmJldkoiXX0=";
+  "eyJAdHlwZSI6Imh0dHBzOi8vZGlkY29tbS5vcmcvY29ubmVjdGlvbnMvMS4wL2ludml0YXRpb24iLCJAaWQiOiJkZTViN2E0Zi1jMGZjLTQwNWMtOWIzOS01NGRhYTI1OWE5MDgiLCJsYWJlbCI6IjdmMTI5ZDJiLWQxNjMtNDI0OS05YmQyLWFkMzExY2IyYjMyZSIsInJlY2lwaWVudEtleXMiOlsiQzJaNlg3ZG8zV3pRRDVnS3JGUlZ0MkFhVDFUU2RuczE3eG1YYkRWVFZ1UHYiXSwic2VydmljZUVuZHBvaW50IjoiaHR0cHM6Ly9lZGE1MTk3YmZiMTEubmdyb2suaW8vbXNnIiwicm91dGluZ0tleXMiOlsiODJSQlNuM2hlTGdYelpkNzRVc01DOFE4WVJmRUVoUW9BTTdMVXFFNmJldkoiXX0=";
 
 const main = async () => {
   console.log("--- made with <3 by an intern at Animo ---");
@@ -50,14 +50,17 @@ const receiveInvite = async (agent: Agent) => {
 
 //handles all state changes on the connection
 const connectionHandler = (agent: Agent) => {
-  agent.connections.events.on(
-    ConnectionEventType.StateChanged,
-    (handler: {
-      connectionRecord: ConnectionRecord;
-      previousState: string;
+  agent.events.on(
+    ConnectionEventTypes.ConnectionStateChanged,
+    async (handler: {
+      type: ConnectionEventTypes.ConnectionStateChanged,
+      payload: {
+        connectionRecord: ConnectionRecord,
+        previousState: string;
+      }
     }) => {
       console.log(
-        `Connection state change: ${handler.previousState} -> ${handler.connectionRecord.state}`
+        `Connection state change: ${handler.payload.previousState} -> ${handler.payload.connectionRecord.state}`
       );
     }
   );
@@ -65,23 +68,26 @@ const connectionHandler = (agent: Agent) => {
 
 // Handles all state changes with credentials
 const credentialHandler = async (agent: Agent) => {
-  agent.credentials.events.on(
-    CredentialEventType.StateChanged,
+  agent.events.on(
+    CredentialEventTypes.CredentialStateChanged,
     async (handler: {
-      credentialRecord: CredentialRecord;
-      previousState: string;
+      type: CredentialEventTypes.CredentialStateChanged,
+      payload: {
+        credentialRecord: CredentialRecord;
+        previousState: string;
+      }
     }) => {
       console.log(
-        `Credential state change: ${handler.previousState} -> ${handler.credentialRecord.state}`
+        `Credential state change: ${handler.payload.previousState} -> ${handler.payload.credentialRecord.state}`
       );
 
-      switch (handler.credentialRecord.state) {
+      switch (handler.payload.credentialRecord.state) {
         case "offer-received":
-          await agent.credentials.acceptOffer(handler.credentialRecord.id);
+          await agent.credentials.acceptOffer(handler.payload.credentialRecord.id);
           console.log("Accepted offer");
           break;
         case "credential-received":
-          await agent.credentials.acceptCredential(handler.credentialRecord.id);
+          await agent.credentials.acceptCredential(handler.payload.credentialRecord.id);
           console.log("Accepted credential");
           break;
         case "done":
@@ -92,21 +98,27 @@ const credentialHandler = async (agent: Agent) => {
 };
 
 const proofHandler = async (agent: Agent) => {
-  agent.proofs.events.on(
-    CredentialEventType.StateChanged,
-    async (handler: { proofRecord: ProofRecord; previousState: string }) => {
+  agent.events.on(
+    CredentialEventTypes.CredentialStateChanged,
+    async (handler: {
+      type: CredentialEventTypes.CredentialStateChanged,
+      payload: {
+        proofRecord: ProofRecord;
+        previousState: string 
+      }
+      }) => {
       console.log(
         `Credential state change: 
-          ${handler.previousState} -> ${handler.proofRecord.state}`
+          ${handler.payload.previousState} -> ${handler.payload.proofRecord.state}`
       );
-      switch (handler.proofRecord.state) {
+      switch (handler.payload.proofRecord.state) {
         case "request-received":
           const requestMessage =
-            handler.proofRecord.requestMessage instanceof
+            handler.payload.proofRecord.requestMessage instanceof
             RequestPresentationMessage
-              ? handler.proofRecord.requestMessage
+              ? handler.payload.proofRecord.requestMessage
               : JsonTransformer.fromJSON(
-                  handler.proofRecord.requestMessage,
+                  handler.payload.proofRecord.requestMessage,
                   RequestPresentationMessage
                 );
           const proofRequest = requestMessage.indyProofRequest;
@@ -116,7 +128,7 @@ const proofHandler = async (agent: Agent) => {
               undefined
             );
             await agent.proofs.acceptRequest(
-              handler.proofRecord.id,
+              handler.payload.proofRecord.id,
               requestedCredentials
             );
             console.log("proof request has been accepted");

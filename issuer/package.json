@@ -13,10 +13,10 @@
     "@types/indy-sdk": "^1.15.0",
     "@types/node": "^14.14.31",
     "@types/node-fetch": "^2.5.8",
-    "aries-framework": "^0.0.5-unstable.0",
+    "aries-framework": "^0.0.22-unstable.0",
     "axios": "^0.21.1",
     "fs": "^0.0.1-security",
-    "indy-sdk": "^1.15.0-dev-1628",
+    "indy-sdk": "^1.16.0",
     "node-fetch": "^2.6.1",
     "tslog": "^3.2.0",
     "uuid": "^8.3.2"
